@@ -157,22 +157,22 @@ graph TD
 
 ## 4. QUY TRÌNH XÂY DỰNG HỆ THỐNG CHI TIẾT THEO CÁC BƯỚC
 
-### Bước 1: Khởi tạo Cơ sở Dữ liệu `OlistDB` ([db.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/db.py))
+### Bước 1: Khởi tạo Cơ sở Dữ liệu `OlistDB` ([db.py](db.py))
 - Nạp 8 file CSV vào Pandas DataFrame. Bỏ qua file geolocation 62MB để tiết kiệm RAM.
 - Định nghĩa hàm `_clean_value()` và `_clean_dict()` để tự động chuyển tất cả ô dữ liệu rỗng `NaN` / `NaT` thành `None` trước khi serialize JSON.
 
-### Bước 2: Đóng gói Policy Engine `EC_POLICY_V1` ([ec_policy_v1.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/ec_policy_v1.py))
+### Bước 2: Đóng gói Policy Engine `EC_POLICY_V1` ([ec_policy_v1.py](ec_policy_v1.py))
 - Khai báo danh sách `POLICY_RULES` chứa thông số của 6 quy tắc nghiệp vụ.
 - Viết hàm `evaluate_policy(analysis_facts)` duyệt lần lượt từ priority 1 đến 6. Trả về kết quả xác định ngay khi gặp rule thỏa mãn đầu tiên.
 - Tích hợp sẵn bộ test case tự động `python ec_policy_v1.py` để verify độc lập.
 
-### Bước 3: Triển khai 6 Agent & Luồng Handoff ([agents.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/agents.py))
+### Bước 3: Triển khai 6 Agent & Luồng Handoff ([agents.py](agents.py))
 - Xây dựng lớp `BaseAgent` quản lý phương thức `log_step()` phục vụ ghi log trace JSON Lines.
 - Khai báo `MODEL_NAME = "gpt-4o-mini"` trực tiếp trong file code (đáp ứng quy định không đặt tên model trong `.env`).
 - Triển khai hàm `call_llm()` với cơ chế Singleton client và Retry 3 lần với Exponential Backoff.
 - Xây dựng 6 lớp Agent kết nối với nhau qua Coordinator.
 
-### Bước 4: Xây dựng Execution Pipeline & Logging ([main.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/main.py))
+### Bước 4: Xây dựng Execution Pipeline & Logging ([main.py](main.py))
 - Đọc tất cả các file case `input/EC_*.json`.
 - Khai báo biến tạo file `logging/metadata.json` chứa thông số model (`gpt-4o-mini`, `<= 10B`).
 - Khởi tạo vòng lặp xử lý 50 case, ghi kết quả ra `output/EC_xxx.json` và append log trace vào `logging/trace.jsonl`.

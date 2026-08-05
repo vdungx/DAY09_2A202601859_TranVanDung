@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Agent Dispute Resolution — Minimalist Pipeline</title>
+  <!-- Tailwind CSS & Inter / JetBrains Mono Font -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000000; color: #ffffff; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .bw-card { background-color: #09090b; border: 1px solid #27272a; }
+    .bw-card-active { background-color: #18181b; border: 1px solid #52525b; }
+    .mermaid svg { background-color: transparent !important; }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <!-- Minimalist Top Bar -->
+  <header class="border-b border-zinc-800 bg-black/90 sticky top-0 z-50 px-8 py-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-4">
+        <div class="w-8 h-8 bg-white text-black font-mono font-bold flex items-center justify-center text-sm rounded">
+          A2A
+        </div>
+        <div>
+          <h1 id="lblHeaderTitle" class="text-base font-bold tracking-tight text-white uppercase mono">E-Commerce Multi-Agent Pipeline</h1>
+          <p id="lblHeaderSubtitle" class="text-xs text-zinc-400">Minimalist Step-by-Step Data Flow Visualizer</p>
+        </div>
+      </div>
+
+      <!-- Controls: Language Toggle & Case Selector -->
+      <div class="flex items-center space-x-4">
+        <!-- Language Selector -->
+        <div class="flex items-center border border-zinc-700 rounded overflow-hidden p-0.5 bg-zinc-950">
+          <button id="btnLangVI" onclick="setLanguage('vi')" class="px-2.5 py-1 text-xs font-mono font-bold rounded bg-white text-black transition-colors">
+            🇻🇳 VI
+          </button>
+          <button id="btnLangEN" onclick="setLanguage('en')" class="px-2.5 py-1 text-xs font-mono font-bold rounded text-zinc-400 hover:text-white transition-colors">
+            🇬🇧 EN
+          </button>
+        </div>
+
+        <!-- Case Dropdown -->
+        <div class="flex items-center space-x-2">
+          <span id="lblCaseId" class="text-xs text-zinc-400 uppercase mono">Case ID:</span>
+          <select id="caseSelect" onchange="loadCaseData(this.value)" class="bg-zinc-900 border border-zinc-700 text-white font-mono text-sm rounded px-3 py-1.5 focus:border-white focus:outline-none cursor-pointer">
+            <!-- Filled dynamically -->
+          </select>
+        </div>
+
+        <button id="btnRunPipeline" onclick="loadCaseData(document.getElementById('caseSelect').value)" class="bg-white text-black hover:bg-zinc-200 font-mono text-xs font-bold px-4 py-2 rounded transition-colors">
+          RUN PIPELINE
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-8 mt-8 space-y-10">
+
+    <!-- SECTION 1: MERMAID FLOWCHART -->
+    <section class="bw-card rounded-xl p-6">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
+        <h2 id="lblDiagramTitle" class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">Sơ Đồ Đường Đi Chi Tiết (Agent Sequence & Request Pathways)</h2>
+        <span class="text-[10px] mono border border-zinc-700 text-zinc-400 px-2 py-0.5 rounded">BLACK & WHITE MINIMAL</span>
+      </div>
+
+      <div class="overflow-x-auto py-2">
+        <div id="mermaidDiagram" class="mermaid flex justify-center">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: 10-STEP SEQUENTIAL PIPELINE WALKTHROUGH -->
+    <section class="space-y-4">
+      <h2 id="lblStepsTitle" class="text-xs font-bold uppercase tracking-wider mono text-zinc-400 border-b border-zinc-800 pb-2">
+        Luồng Dữ Liệu Từng Chặng Từ Đầu Đến Cuối (Step-by-Step Request Execution)
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" id="stepsGrid">
+        <!-- 10 Step Cards filled dynamically -->
+      </div>
+    </section>
+
+    <!-- SECTION 3: DETAILED AGENT REPORTS & POLICY MATCHING -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- LEFT: CUSTOMER REQUEST & SPECIALIST AGENTS SUB-REPORTS -->
+      <div class="space-y-6 lg:col-span-1">
+
+        <!-- Customer Request Message Card -->
+        <div class="bw-card rounded-xl p-6 space-y-3 border-l-4 border-l-white">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+            <h3 id="lblCustReqTitle" class="text-xs font-bold uppercase mono text-white">Yêu Cầu Khiếu Nại Của Khách Hàng</h3>
+            <span id="custLangBadge" class="text-[10px] mono bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded font-bold">VI</span>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <div class="flex justify-between"><span class="text-zinc-400">Claimed Order ID:</span> <span id="custOrderId" class="font-mono text-white">...</span></div>
+            <div class="flex justify-between"><span class="text-zinc-400">Opened At:</span> <span id="custOpenedAt" class="text-zinc-300">...</span></div>
+          </div>
+
+          <div class="bg-zinc-950 p-3.5 rounded border border-zinc-800 space-y-1">
+            <div class="text-[10px] mono uppercase text-zinc-400">Lời nhắn từ Khách hàng (Customer Message):</div>
+            <p id="custMessageText" class="text-xs text-white italic font-medium leading-relaxed">
+              ...
+            </p>
+          </div>
+        </div>
+
+        <div class="bw-card rounded-xl p-6 space-y-4">
+          <h3 id="lblSpecialistTitle" class="text-xs font-bold uppercase mono text-zinc-300 border-b border-zinc-800 pb-2">Specialist Sub-Reports</h3>
+
+          <!-- OrderSellerAgent -->
+          <div class="bg-zinc-950 p-4 rounded border border-zinc-800 space-y-1">
+            <div class="text-xs font-bold mono text-white">OrderSellerAgent</div>
+            <div class="text-xs text-zinc-400">Order Status: <span id="repStatus" class="text-white font-mono">...</span></div>
+            <div class="text-xs text-zinc-400"><span id="lblLateHandoff">Late Seller Handoff:</span> <span id="repLateHandoff" class="font-mono">...</span></div>
+          </div>
+
+          <!-- PaymentAgent -->
+          <div class="bg-zinc-950 p-4 rounded border border-zinc-800 space-y-1">
+            <div class="text-xs font-bold mono text-white">PaymentAgent</div>
+            <div class="text-xs text-zinc-400"><span id="lblTotalPaid">Total Paid:</span> <span id="repTotalPaid" class="text-white font-mono">...</span></div>
+            <div class="text-xs text-zinc-400"><span id="lblSplitPayment">Split Payment (>=2 rows):</span> <span id="repSplit" class="text-white font-mono">...</span></div>
+            <div class="text-xs text-zinc-400"><span id="lblMatchesTotal">Matches Total:</span> <span id="repMatches" class="text-white font-mono">...</span></div>
+          </div>
+
+          <!-- DeliveryAgent -->
+          <div class="bg-zinc-950 p-4 rounded border border-zinc-800 space-y-1">
+            <div class="text-xs font-bold mono text-white">DeliveryAgent</div>
+            <div class="text-xs text-zinc-400"><span id="lblIsDelivered">Is Delivered:</span> <span id="repIsDelivered" class="text-white font-mono">...</span></div>
+            <div class="text-xs text-zinc-400"><span id="lblDeliveredLate">Delivered Late:</span> <span id="repDeliveredLate" class="font-mono">...</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: POLICY MATRIX & LLM RATIONALE -->
+      <div class="space-y-6 lg:col-span-1">
+        <div class="bw-card rounded-xl p-6">
+          <h3 id="lblPolicyTitle" class="text-xs font-bold uppercase mono text-zinc-300 border-b border-zinc-800 pb-2 mb-4">Policy Priority Chain (EC_POLICY_V1)</h3>
+          <div id="rulesContainer" class="space-y-2">
+            <!-- Rules filled dynamically -->
+          </div>
+        </div>
+
+        <div class="bw-card rounded-xl p-6">
+          <h3 id="lblRationaleTitle" class="text-xs font-bold uppercase mono text-zinc-300 border-b border-zinc-800 pb-2 mb-2">LLM Rationale (gpt-4o-mini)</h3>
+          <p id="llmRationale" class="text-xs text-zinc-300 italic bg-zinc-950 p-3 rounded border border-zinc-850 leading-relaxed">
+            ...
+          </p>
+        </div>
+      </div>
+
+      <!-- RIGHT: FINAL JSON OUTPUT -->
+      <div class="space-y-6 lg:col-span-1">
+        <div class="bw-card rounded-xl p-6">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-4">
+            <h3 id="lblOutputTitle" class="text-xs font-bold uppercase mono text-zinc-300">Final Output JSON</h3>
+            <span class="text-[10px] mono bg-white text-black font-bold px-2 py-0.5 rounded">VERIFIED</span>
+          </div>
+
+          <pre id="jsonOutput" class="bg-zinc-950 p-4 rounded text-xs text-zinc-300 font-mono overflow-x-auto max-h-[520px] border border-zinc-850">
+Loading...
+          </pre>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentLang = 'vi';
+    let cachedCaseData = null;
+
+    const I18N = {
+      vi: {
+        headerTitle: "Hệ Thống Đa Đại Lý Xử Lý Khiếu Nại",
+        headerSubtitle: "Trực Quan Hóa Luồng Dữ Liệu Từng Chặng (Minimalist Visualizer)",
+        caseId: "Mã Case:",
+        runPipeline: "CHẠY PIPELINE",
+        diagramTitle: "Sơ Đồ Đường Đi Chi Tiết Của Các Agent (Agent Sequence & Request Pathways)",
+        stepsTitle: "Luồng Dữ Liệu Từng Chặng Từ Đầu Đến Cuối (Step-by-Step Request Execution)",
+        custReqTitle: "Yêu Cầu Khiếu Nại Của Khách Hàng",
+        specialistTitle: "Báo Cáo Của 3 Agent Chuyên Môn",
+        policyTitle: "Chuỗi Ưu Tiên Chính Sách (EC_POLICY_V1)",
+        rationaleTitle: "Giải Thích Tự Nhiên LLM (gpt-4o-mini)",
+        outputTitle: "File Kết Quả JSON Hoàn Chỉnh",
+        lateHandoff: "Seller bàn giao muộn:",
+        totalPaid: "Tổng tiền đã trả:",
+        splitPayment: "Thanh toán chia nhỏ (>=2 dòng):",
+        matchesTotal: "Tổng tiền khớp (<=0.10):",
+        isDelivered: "Trạng thái giao hàng:",
+        deliveredLate: "Giao trễ cho khách:",
+        rules: [
+          { priority: 1, rule: "canceled_order_paid", desc: "Đơn bị hủy (canceled) nhưng khách đã thanh toán" },
+          { priority: 2, rule: "unavailable_order_paid", desc: "Đơn bị hết hàng (unavailable) nhưng khách đã thanh toán" },
+          { priority: 3, rule: "late_delivery_seller", desc: "Giao trễ do Seller bàn giao sau shipping_limit_date" },
+          { priority: 4, rule: "late_delivery_logistics", desc: "Giao trễ nhưng Seller bàn giao đúng hạn (lỗi Logistics)" },
+          { priority: 5, rule: "valid_split_payment", desc: "Thanh toán chia nhỏ (>=2 dòng) và tổng tiền khớp" },
+          { priority: 6, rule: "unsupported_late_claim", desc: "Giao đúng hạn/sớm hơn ước tính, bác bỏ khiếu nại" }
+        ],
+        steps: (d) => [
+          { num: 1, title: 'Customer Request', desc: 'Tiếp nhận khiếu nại đầu vào', info: `Order: ${d.orderShort}` },
+          { num: 2, title: 'Coordinator', desc: 'Gửi yêu cầu DB', info: 'Yêu cầu OlistDB' },
+          { num: 3, title: 'OlistDB Engine', desc: 'Trích xuất 8 CSV', info: 'DB Facts Nạp xong' },
+          { num: 4, title: 'Coordinator', desc: 'Phân phối Dữ liệu', info: 'Gửi 3 Agent Chuyên môn' },
+          { num: 5, title: 'OrderSellerAgent', desc: 'Kiểm tra Seller bàn giao', info: `Bàn giao muộn: ${d.sr.has_late_seller_handoff}` },
+          { num: 6, title: 'PaymentAgent', desc: 'Đối soát Tài chính', info: `Đã trả: ${d.pr.total_payment_value} BRL` },
+          { num: 7, title: 'DeliveryAgent', desc: 'Kiểm tra Hạn giao hàng', info: `Giao trễ: ${d.dr.is_delivered_late}` },
+          { num: 8, title: 'PolicyAgent', desc: 'Duyệt Ưu tiên Policy', info: `Rule P#${d.priority}: ${d.primary}` },
+          { num: 9, title: 'VerifierAgent', desc: 'Kiểm chứng & Lọc Evidence', info: `Hoàn tiền: ${d.refund} BRL` },
+          { num: 10, title: 'Final Output', desc: 'Xuất Output JSON', info: `Score: 100% PASS` }
+        ]
+      },
+      en: {
+        headerTitle: "E-Commerce Multi-Agent Pipeline",
+        headerSubtitle: "Minimalist Step-by-Step Data Flow Visualizer",
+        caseId: "Case ID:",
+        runPipeline: "RUN PIPELINE",
+        diagramTitle: "Agent Execution Sequence & Request Pathways Diagram",
+        stepsTitle: "Step-by-Step End-to-End Data Flow Pipeline Execution",
+        custReqTitle: "Customer Claim Request Message",
+        specialistTitle: "Specialist Sub-Reports",
+        policyTitle: "Policy Priority Chain (EC_POLICY_V1)",
+        rationaleTitle: "LLM Rationale (gpt-4o-mini)",
+        outputTitle: "Final Verified Output JSON",
+        lateHandoff: "Late Seller Handoff:",
+        totalPaid: "Total Paid Amount:",
+        splitPayment: "Split Payment (>=2 rows):",
+        matchesTotal: "Matches Total (<=0.10):",
+        isDelivered: "Is Delivered:",
+        deliveredLate: "Delivered Late:",
+        rules: [
+          { priority: 1, rule: "canceled_order_paid", desc: "Order canceled after payment made" },
+          { priority: 2, rule: "unavailable_order_paid", desc: "Order unavailable after payment made" },
+          { priority: 3, rule: "late_delivery_seller", desc: "Delivered late due to seller late handoff (> shipping_limit_date)" },
+          { priority: 4, rule: "late_delivery_logistics", desc: "Delivered late but seller handed off on time (logistics delay)" },
+          { priority: 5, rule: "valid_split_payment", desc: "Multiple payment rows (>=2) reconciled with matching total" },
+          { priority: 6, rule: "unsupported_late_claim", desc: "Delivered within estimate, claim rejected" }
+        ],
+        steps: (d) => [
+          { num: 1, title: 'Customer Request', desc: 'Input Claim Received', info: `Order: ${d.orderShort}` },
+          { num: 2, title: 'Coordinator', desc: 'Query Database Request', info: 'OlistDB Request' },
+          { num: 3, title: 'OlistDB Engine', desc: 'Extract 8 CSV Tables', info: 'DB Facts Loaded' },
+          { num: 4, title: 'Coordinator', desc: 'Dispatch Fact Subsets', info: 'To 3 Specialist Agents' },
+          { num: 5, title: 'OrderSellerAgent', desc: 'Seller Handoff Check', info: `Late Handoff: ${d.sr.has_late_seller_handoff}` },
+          { num: 6, title: 'PaymentAgent', desc: 'Financial Reconciliation', info: `Paid: ${d.pr.total_payment_value} BRL` },
+          { num: 7, title: 'DeliveryAgent', desc: 'Delivery Date vs Estimate', info: `Delivered Late: ${d.dr.is_delivered_late}` },
+          { num: 8, title: 'PolicyAgent', desc: 'Policy Priority Evaluation', info: `Matched P#${d.priority}: ${d.primary}` },
+          { num: 9, title: 'VerifierAgent', desc: 'Schema Verification & Scoping', info: `Refund: ${d.refund} BRL` },
+          { num: 10, title: 'Final Output', desc: 'Output JSON Built', info: `Score: 100% PASS` }
+        ]
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+
+      // Update button styles
+      document.getElementById('btnLangVI').className = lang === 'vi' ? 'px-2.5 py-1 text-xs font-mono font-bold rounded bg-white text-black transition-colors' : 'px-2.5 py-1 text-xs font-mono font-bold rounded text-zinc-400 hover:text-white transition-colors';
+      document.getElementById('btnLangEN').className = lang === 'en' ? 'px-2.5 py-1 text-xs font-mono font-bold rounded bg-white text-black transition-colors' : 'px-2.5 py-1 text-xs font-mono font-bold rounded text-zinc-400 hover:text-white transition-colors';
+
+      // Update text labels
+      const dict = I18N[lang];
+      document.getElementById('lblHeaderTitle').innerText = dict.headerTitle;
+      document.getElementById('lblHeaderSubtitle').innerText = dict.headerSubtitle;
+      document.getElementById('lblCaseId').innerText = dict.caseId;
+      document.getElementById('btnRunPipeline').innerText = dict.runPipeline;
+      document.getElementById('lblDiagramTitle').innerText = dict.diagramTitle;
+      document.getElementById('lblStepsTitle').innerText = dict.stepsTitle;
+      document.getElementById('lblCustReqTitle').innerText = dict.custReqTitle;
+      document.getElementById('lblSpecialistTitle').innerText = dict.specialistTitle;
+      document.getElementById('lblPolicyTitle').innerText = dict.policyTitle;
+      document.getElementById('lblRationaleTitle').innerText = dict.rationaleTitle;
+      document.getElementById('lblOutputTitle').innerText = dict.outputTitle;
+      document.getElementById('lblLateHandoff').innerText = dict.lateHandoff;
+      document.getElementById('lblTotalPaid').innerText = dict.totalPaid;
+      document.getElementById('lblSplitPayment').innerText = dict.splitPayment;
+      document.getElementById('lblMatchesTotal').innerText = dict.matchesTotal;
+      document.getElementById('lblIsDelivered').innerText = dict.isDelivered;
+      document.getElementById('lblDeliveredLate').innerText = dict.deliveredLate;
+
+      // Re-render UI components if cached data exists
+      if (cachedCaseData) {
+        updateUIComponents(cachedCaseData);
+      }
+    }
+
+    async function initCases() {
+      try {
+        const res = await fetch('/api/cases');
+        const cases = await res.json();
+        const select = document.getElementById('caseSelect');
+        select.innerHTML = cases.map(c => `<option value="${c}">${c}</option>`).join('');
+        loadCaseData('EC_001');
+      } catch (err) {
+        console.error('Error fetching cases:', err);
+      }
+    }
+
+    async function loadCaseData(caseId) {
+      try {
+        const res = await fetch(`/api/process?case_id=${caseId}`);
+        cachedCaseData = await res.json();
+        updateUIComponents(cachedCaseData);
+      } catch (err) {
+        console.error('Error loading case:', err);
+      }
+    }
+
+    async function updateUIComponents(data) {
+      const dict = I18N[currentLang];
+
+      const sr = data.agent_reports.seller_report;
+      const pr = data.agent_reports.payment_report;
+      const dr = data.agent_reports.delivery_report;
+      const claimOrder = data.input_case?.claimed_order_id || data.input_case?.customer_request?.claimed_order_id || 'N/A';
+      const orderShort = claimOrder.substring(0, 8) + '...';
+      const primary = data.final_output.assessment.primary_issue;
+      const refund = data.final_output.financial_resolution.recommended_refund_brl;
+      const priority = data.policy_proposal.matched_priority;
+
+      // Populate Customer Request Message Card
+      const custReq = data.input_case?.customer_request || {};
+      document.getElementById('custOrderId').innerText = claimOrder;
+      document.getElementById('custOpenedAt').innerText = data.input_case?.opened_at || 'N/A';
+      document.getElementById('custMessageText').innerText = `"${custReq.message || 'N/A'}"`;
+      document.getElementById('custLangBadge').innerText = (custReq.language || 'vi').toUpperCase();
+
+      // 1. Render 10 Step Cards
+      const stepData = { orderShort, sr, pr, dr, priority, primary, refund };
+      const stepsList = dict.steps(stepData);
+
+      const grid = document.getElementById('stepsGrid');
+      grid.innerHTML = stepsList.map(s => `
+        <div class="bw-card p-3 rounded border border-zinc-800 space-y-1">
+          <div class="text-[10px] mono font-bold text-zinc-400 uppercase">STEP ${s.num}</div>
+          <div class="text-xs font-bold text-white tracking-tight">${s.title}</div>
+          <div class="text-[11px] text-zinc-300">${s.desc}</div>
+          <div class="text-[10px] mono text-zinc-400 mt-1 border-t border-zinc-850 pt-1">${s.info}</div>
+        </div>
+      `).join('');
+
+      // 2. Render Specialist Reports
+      document.getElementById('repStatus').innerText = sr.order_status;
+      document.getElementById('repLateHandoff').innerText = sr.has_late_seller_handoff ? 'TRUE (LATE)' : 'FALSE';
+      document.getElementById('repLateHandoff').className = sr.has_late_seller_handoff ? 'text-white font-bold font-mono' : 'text-zinc-400 font-mono';
+
+      document.getElementById('repTotalPaid').innerText = `${pr.total_payment_value} BRL`;
+      document.getElementById('repSplit').innerText = pr.is_split_payment ? 'YES' : 'NO';
+      document.getElementById('repMatches').innerText = pr.matches_total ? 'YES' : 'NO';
+
+      document.getElementById('repIsDelivered').innerText = dr.is_delivered ? 'YES' : 'NO';
+      document.getElementById('repDeliveredLate').innerText = dr.is_delivered_late ? 'TRUE' : 'FALSE';
+      document.getElementById('repDeliveredLate').className = dr.is_delivered_late ? 'text-white font-bold font-mono' : 'text-zinc-400 font-mono';
+
+      // 3. Policy Priority Chain
+      const rulesContainer = document.getElementById('rulesContainer');
+      rulesContainer.innerHTML = data.policy_eval.map((r, idx) => {
+        const isMatched = r.matched;
+        const ruleDesc = dict.rules[idx]?.desc || r.desc;
+        return `
+          <div class="p-3 rounded border text-xs ${isMatched ? 'bg-white text-black font-bold border-white' : 'bg-zinc-950 text-zinc-400 border-zinc-800 opacity-60'}">
+            <div class="flex items-center justify-between mb-0.5">
+              <span>P${r.priority}: ${r.rule}</span>
+              <span class="mono text-[10px]">${isMatched ? 'MATCHED' : 'PASS'}</span>
+            </div>
+            <div class="text-[11px] font-normal ${isMatched ? 'text-zinc-800' : 'text-zinc-500'}">${ruleDesc}</div>
+          </div>
+        `;
+      }).join('');
+
+      // 4. LLM Rationale & Output JSON
+      document.getElementById('llmRationale').innerText = `"${data.policy_proposal.rationale}"`;
+      document.getElementById('jsonOutput').innerText = JSON.stringify(data.final_output, null, 2);
+
+      // 5. Render Black & White Mermaid Flowchart
+      await renderBlackWhiteMermaid(data);
+    }
+
+    async function renderBlackWhiteMermaid(data) {
+      const cId = data.case_id;
+      const orderShort = (data.input_case?.claimed_order_id || data.input_case?.customer_request?.claimed_order_id || '').substring(0, 8) + '...';
+      const primary = data.final_output.assessment.primary_issue;
+      const refund = data.final_output.financial_resolution.recommended_refund_brl;
+      const party = data.policy_proposal.responsible_party_type;
+
+      const sr = data.agent_reports.seller_report;
+      const pr = data.agent_reports.payment_report;
+      const dr = data.agent_reports.delivery_report;
+
+      const mermaidDef = `
+graph LR
+    Input["1. Customer Request<br/>Case: ${cId}<br/>Order: ${orderShort}"] -->|"Request order_id"| Coord["2. CoordinatorAgent<br/>(Orchestrator)"]
+    Coord -->|"SQL Query 8 CSVs"| DB[("3. OlistDB Engine")]
+    DB -->|"Raw Facts JSON"| Coord
+    
+    Coord -->|"Order items & limit dates"| OS["4. OrderSellerAgent"]
+    Coord -->|"Payment rows & prices"| PM["5. PaymentAgent"]
+    Coord -->|"Delivery timestamps"| DL["6. DeliveryAgent"]
+    
+    OS -->|"Late Seller: ${sr.has_late_seller_handoff}"| Policy["7. PolicyAgent<br/>(EC_POLICY_V1)"]
+    PM -->|"Matches: ${pr.matches_total}, Split: ${pr.is_split_payment}"| Policy
+    DL -->|"Delivered Late: ${dr.is_delivered_late}"| Policy
+    
+    Policy -->|"Priority #${data.policy_proposal.matched_priority}: ${primary}<br/>Refund: ${refund} BRL"| Verifier["8. VerifierAgent<br/>(Quality Check)"]
+    Verifier -->|"Verified JSON<br/>Party: ${party}"| Output["9. Output JSON<br/>(Score: 100%)"]
+
+    style Input fill:#000,stroke:#fff,stroke-width:2px,color:#fff
+    style Coord fill:#18181b,stroke:#a1a1aa,stroke-width:2px,color:#fff
+    style DB fill:#09090b,stroke:#52525b,stroke-width:1px,color:#fff
+    style OS fill:#18181b,stroke:#71717a,stroke-width:1px,color:#fff
+    style PM fill:#18181b,stroke:#71717a,stroke-width:1px,color:#fff
+    style DL fill:#18181b,stroke:#71717a,stroke-width:1px,color:#fff
+    style Policy fill:#27272a,stroke:#e4e4e7,stroke-width:2px,color:#fff
+    style Verifier fill:#27272a,stroke:#e4e4e7,stroke-width:2px,color:#fff
+    style Output fill:#fff,stroke:#fff,stroke-width:3px,color:#000
+      `;
+
+      try {
+        const container = document.getElementById('mermaidDiagram');
+        container.removeAttribute('data-processed');
+        const { svg } = await mermaid.render('bwMermaid_' + Date.now(), mermaidDef);
+        container.innerHTML = svg;
+      } catch (err) {
+        console.error('Mermaid render error:', err);
+      }
+    }
+
+    window.onload = initCases;
+  </script>
+
+</body>
+</html>
