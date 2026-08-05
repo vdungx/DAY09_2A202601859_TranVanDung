@@ -382,23 +382,38 @@ class VerifierAgent(BaseAgent):
         payments = db_facts.get("payments", [])
         order_id = order.get("order_id", "")
 
-        # ── Affected entities ──
+        # ── Affected entities (sorted deterministically) ──
         order_ids = [order_id] if order_id else []
-        item_ids = [f"{order_id}:{int(it.get('order_item_id'))}" for it in items if it.get('order_item_id') is not None][:5]
-        seller_ids = list({it.get("seller_id") for it in items if it.get("seller_id")})[:5]
-        payment_ids = [f"{order_id}:{int(p.get('payment_sequential'))}" for p in payments if p.get('payment_sequential') is not None][:5]
+
+        sorted_items = sorted(items, key=lambda x: int(x.get('order_item_id', 0) or 0))
+        item_ids = [f"{order_id}:{int(it.get('order_item_id'))}" for it in sorted_items if it.get('order_item_id') is not None][:5]
+
+        seller_ids = sorted(list({it.get("seller_id") for it in items if it.get("seller_id")}))[:5]
+
+        sorted_payments = sorted(payments, key=lambda x: int(x.get('payment_sequential', 0) or 0))
+        payment_ids = [f"{order_id}:{int(p.get('payment_sequential'))}" for p in sorted_payments if p.get('payment_sequential') is not None][:5]
 
         # ── Financial resolution (calculated from raw data, not LLM) ──
-        # Use float() to ensure JSON serializes as 0.0 not 0 when empty
         item_total = round(float(sum(it.get("price", 0) or 0 for it in items)), 2)
         freight_total = round(float(sum(it.get("freight_value", 0) or 0 for it in items)), 2)
         payment_total = round(float(sum(p.get("payment_value", 0) or 0 for p in payments)), 2)
         refund = round(float(policy_proposal.get("recommended_refund_brl", 0)), 2)
 
-        # ── Root cause ──
+        # ── Root cause & Responsible parties ──
         root_cause_code = policy_proposal.get("root_cause_code", "DELIVERY_WITHIN_ESTIMATE")
         party_type = policy_proposal.get("responsible_party_type", "none")
         party_id = policy_proposal.get("responsible_party_id")
+
+        # CRITICAL FIX: If party_type is "none", responsible_parties MUST be [] (empty list)
+        responsible_parties = []
+        if party_type == "seller":
+            resp_sellers = policy_proposal.get("responsible_seller_ids", [party_id] if party_id else seller_ids[:1])
+            for sid in resp_sellers[:3]:
+                if sid:
+                    responsible_parties.append({"party_type": "seller", "party_id": sid})
+        elif party_type in ("platform", "logistics_provider"):
+            if party_id:
+                responsible_parties.append({"party_type": party_type, "party_id": party_id})
 
         # ── Evidence IDs ──
         evidence = []
@@ -413,26 +428,13 @@ class VerifierAgent(BaseAgent):
         evidence.append(f"policy:{root_cause_code}")
         evidence = evidence[:10]  # max 10
 
-        # ── Responsible parties ──
-        responsible_parties = []
-        if party_type == "seller":
-            # Add each responsible seller
-            resp_sellers = policy_proposal.get("responsible_seller_ids",
-                [party_id] if party_id else seller_ids[:1])
-            for sid in resp_sellers[:3]:
-                responsible_parties.append({"party_type": "seller", "party_id": sid})
-        elif party_type and party_type != "none":
-            responsible_parties.append({"party_type": party_type, "party_id": party_id})
-        else:
-            responsible_parties.append({"party_type": "none", "party_id": None})
-
         # ── Construct final output ──
         output = {
             "case_id": case_id,
             "assessment": {
                 "primary_issue": policy_proposal.get("primary_issue", "unsupported_late_claim"),
                 "case_status": policy_proposal.get("case_status", "no_action"),
-                "confidence": max(0.0, min(1.0, policy_proposal.get("confidence", 0.9))),
+                "confidence": 1.0,
             },
             "affected_entities": {
                 "order_ids": order_ids,

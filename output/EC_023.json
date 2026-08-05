@@ -3,7 +3,7 @@
   "assessment": {
     "primary_issue": "unsupported_late_claim",
     "case_status": "no_action",
-    "confidence": 0.95
+    "confidence": 1.0
   },
   "affected_entities": {
     "order_ids": [
@@ -26,12 +26,7 @@
         "rank": 1
       }
     ],
-    "responsible_parties": [
-      {
-        "party_type": "none",
-        "party_id": null
-      }
-    ]
+    "responsible_parties": []
   },
   "evidence_ids": [
     "order:5fba7c57daf631028d2a584c52799e24",

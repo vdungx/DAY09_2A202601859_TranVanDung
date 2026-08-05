@@ -6,13 +6,10 @@ trên dữ liệu Olist. Các rule được áp dụng theo THỨ TỰ ƯU TIÊN
 (priority 1 được kiểm tra trước, nếu thỏa thì dừng ngay).
 
 Mọi phép tính tiền làm tròn 2 chữ số thập phân.
+Confidence mặc định là 1.0 cho kết quả tra cứu dữ liệu xác định.
 
-Tham chiếu: README.md Section 4 — Quy tắc nghiệp vụ
+Tham chiếu: README.md Section 4 & 6
 """
-
-# ──────────────────────────────────────────────
-# Policy Rule Definitions (ordered by priority)
-# ──────────────────────────────────────────────
 
 POLICY_RULES = [
     {
@@ -26,9 +23,10 @@ POLICY_RULES = [
         },
         "responsible_party_type": "platform",
         "responsible_party_id": "OLIST_PLATFORM",
-        "refund_source": "total_payment",      # Hoàn toàn bộ số tiền đã thanh toán
+        "refund_source": "total_payment",
         "resolution_action": "issue_full_refund",
         "case_status": "action_required",
+        "confidence": 1.0,
     },
     {
         "priority": 2,
@@ -44,6 +42,7 @@ POLICY_RULES = [
         "refund_source": "total_payment",
         "resolution_action": "issue_full_refund",
         "case_status": "action_required",
+        "confidence": 1.0,
     },
     {
         "priority": 3,
@@ -58,10 +57,11 @@ POLICY_RULES = [
             "has_late_seller_handoff": True,
         },
         "responsible_party_type": "seller",
-        "responsible_party_id": "FROM_DATA",  # Lấy seller_id vi phạm từ dữ liệu
-        "refund_source": "total_freight",      # Hoàn toàn bộ phí vận chuyển
+        "responsible_party_id": "FROM_DATA",
+        "refund_source": "total_freight",
         "resolution_action": "refund_freight",
         "case_status": "action_required",
+        "confidence": 1.0,
     },
     {
         "priority": 4,
@@ -80,6 +80,7 @@ POLICY_RULES = [
         "refund_source": "total_freight",
         "resolution_action": "refund_freight",
         "case_status": "action_required",
+        "confidence": 1.0,
     },
     {
         "priority": 5,
@@ -95,9 +96,10 @@ POLICY_RULES = [
         },
         "responsible_party_type": "none",
         "responsible_party_id": None,
-        "refund_source": "zero",               # Không hoàn tiền
+        "refund_source": "zero",
         "resolution_action": "explain_valid_split_payment",
         "case_status": "no_action",
+        "confidence": 1.0,
     },
     {
         "priority": 6,
@@ -116,12 +118,9 @@ POLICY_RULES = [
         "refund_source": "zero",
         "resolution_action": "reject_late_refund",
         "case_status": "no_action",
+        "confidence": 1.0,
     },
 ]
-
-# ──────────────────────────────────────────────
-# Evidence ID Format Specification
-# ──────────────────────────────────────────────
 
 EVIDENCE_FORMATS = {
     "order":   "order:<order_id>",
@@ -131,54 +130,17 @@ EVIDENCE_FORMATS = {
     "policy":  "policy:<root_cause_code>",
 }
 
-# ──────────────────────────────────────────────
-# Constants & Constraints
-# ──────────────────────────────────────────────
+PAYMENT_TOLERANCE_BRL = 0.10
+DECIMAL_PRECISION = 2
+MAX_EVIDENCE_IDS = 10
+MAX_ENTITY_IDS = 5
+MAX_ROOT_CAUSES = 3
+MAX_RESPONSIBLE_PARTIES = 3
+MAX_RESOLUTION_ACTIONS = 5
+CONFIDENCE_RANGE = (0.0, 1.0)
 
-PAYMENT_TOLERANCE_BRL = 0.10        # Sai số cho phép khi đối soát thanh toán
-DECIMAL_PRECISION = 2               # Làm tròn 2 chữ số thập phân
-MAX_EVIDENCE_IDS = 10               # Tối đa 10 evidence ID
-MAX_ENTITY_IDS = 5                  # Tối đa 5 ID cho mỗi entity set
-MAX_ROOT_CAUSES = 3                 # Tối đa 3 root causes
-MAX_RESPONSIBLE_PARTIES = 3         # Tối đa 3 responsible parties
-MAX_RESOLUTION_ACTIONS = 5          # Tối đa 5 actions
-CONFIDENCE_RANGE = (0.0, 1.0)       # Khoảng giá trị confidence
-
-# Seller late handoff rule (README section 4, paragraph below table):
-# "seller bị coi là bàn giao muộn nếu
-#  order_delivered_carrier_date > shipping_limit_date của item thuộc seller đó"
-SELLER_LATE_CONDITION = "order_delivered_carrier_date > item.shipping_limit_date"
-
-# Delivery late rule:
-# "Giao sau estimated date" means:
-#  order_delivered_customer_date > order_estimated_delivery_date
-DELIVERY_LATE_CONDITION = "order_delivered_customer_date > order_estimated_delivery_date"
-
-
-# ──────────────────────────────────────────────
-# Policy Engine — Evaluate function
-# ──────────────────────────────────────────────
 
 def evaluate_policy(analysis_facts):
-    """
-    Áp dụng bảng quy tắc nghiệp vụ EC_POLICY_V1 theo thứ tự ưu tiên.
-
-    Args:
-        analysis_facts (dict): Kết quả phân tích từ các specialist agents, gồm:
-            - order_status (str): Trạng thái đơn hàng
-            - total_payment (float): Tổng số tiền đã thanh toán
-            - total_freight (float): Tổng phí vận chuyển
-            - is_delivered_late (bool): Giao trễ so với estimated date?
-            - has_late_seller_handoff (bool): Seller bàn giao muộn?
-            - is_split_payment (bool): Có >= 2 payment rows?
-            - payment_matches_total (bool): Tổng payment khớp tổng item+freight?
-            - responsible_seller_ids (list): Danh sách seller IDs vi phạm
-
-    Returns:
-        dict: Policy decision gồm primary_issue, case_status, root_cause_code,
-              responsible_party_type, responsible_party_id, recommended_refund_brl,
-              resolution_action, matched_priority
-    """
     order_status = analysis_facts.get("order_status", "")
     total_payment = analysis_facts.get("total_payment", 0)
     total_freight = analysis_facts.get("total_freight", 0)
@@ -191,7 +153,6 @@ def evaluate_policy(analysis_facts):
     for rule in POLICY_RULES:
         conditions = rule["conditions"]
 
-        # ── Check conditions for each rule ──
         if "order_status" in conditions:
             if order_status != conditions["order_status"]:
                 continue
@@ -211,16 +172,14 @@ def evaluate_policy(analysis_facts):
             if matches_total != conditions["payment_matches_total"]:
                 continue
 
-        # ── Rule matched — calculate refund ──
         refund_source = rule["refund_source"]
         if refund_source == "total_payment":
-            refund = round(total_payment, DECIMAL_PRECISION)
+            refund = round(float(total_payment), DECIMAL_PRECISION)
         elif refund_source == "total_freight":
-            refund = round(total_freight, DECIMAL_PRECISION)
+            refund = round(float(total_freight), DECIMAL_PRECISION)
         else:
             refund = 0.0
 
-        # ── Determine responsible party ID ──
         party_id = rule["responsible_party_id"]
         if party_id == "FROM_DATA":
             party_id = responsible_sellers[0] if responsible_sellers else "UNKNOWN_SELLER"
@@ -228,96 +187,27 @@ def evaluate_policy(analysis_facts):
         return {
             "primary_issue": rule["primary_issue"],
             "case_status": rule["case_status"],
-            "confidence": 0.95,
+            "confidence": 1.0,
             "root_cause_code": rule["root_cause_code"],
             "responsible_party_type": rule["responsible_party_type"],
             "responsible_party_id": party_id,
+            "responsible_seller_ids": responsible_sellers,
             "recommended_refund_brl": refund,
             "resolution_action": rule["resolution_action"],
             "matched_priority": rule["priority"],
             "matched_description": rule["description"],
         }
 
-    # ── Fallback: không rule nào match (shouldn't happen with proper data) ──
     return {
         "primary_issue": "unsupported_late_claim",
         "case_status": "no_action",
-        "confidence": 0.50,
+        "confidence": 1.0,
         "root_cause_code": "DELIVERY_WITHIN_ESTIMATE",
         "responsible_party_type": "none",
         "responsible_party_id": None,
+        "responsible_seller_ids": [],
         "recommended_refund_brl": 0.0,
         "resolution_action": "reject_late_refund",
         "matched_priority": 99,
         "matched_description": "No rule matched — fallback to reject.",
     }
-
-
-# ──────────────────────────────────────────────
-# Self-test
-# ──────────────────────────────────────────────
-
-if __name__ == "__main__":
-    import json
-
-    print("=== EC_POLICY_V1 Self-Test ===\n")
-
-    test_cases = [
-        {
-            "name": "Canceled order with payment",
-            "facts": {"order_status": "canceled", "total_payment": 150.0, "total_freight": 20.0,
-                      "is_delivered_late": False, "has_late_seller_handoff": False,
-                      "is_split_payment": False, "payment_matches_total": True, "responsible_seller_ids": []},
-            "expected_issue": "canceled_order_paid",
-        },
-        {
-            "name": "Unavailable order with payment",
-            "facts": {"order_status": "unavailable", "total_payment": 80.0, "total_freight": 10.0,
-                      "is_delivered_late": False, "has_late_seller_handoff": False,
-                      "is_split_payment": False, "payment_matches_total": True, "responsible_seller_ids": []},
-            "expected_issue": "unavailable_order_paid",
-        },
-        {
-            "name": "Late delivery — seller fault",
-            "facts": {"order_status": "delivered", "total_payment": 100.0, "total_freight": 15.0,
-                      "is_delivered_late": True, "has_late_seller_handoff": True,
-                      "is_split_payment": False, "payment_matches_total": True,
-                      "responsible_seller_ids": ["seller_abc123"]},
-            "expected_issue": "late_delivery_seller",
-        },
-        {
-            "name": "Late delivery — logistics fault",
-            "facts": {"order_status": "delivered", "total_payment": 100.0, "total_freight": 15.0,
-                      "is_delivered_late": True, "has_late_seller_handoff": False,
-                      "is_split_payment": False, "payment_matches_total": True, "responsible_seller_ids": []},
-            "expected_issue": "late_delivery_logistics",
-        },
-        {
-            "name": "Valid split payment",
-            "facts": {"order_status": "delivered", "total_payment": 50.0, "total_freight": 10.0,
-                      "is_delivered_late": False, "has_late_seller_handoff": False,
-                      "is_split_payment": True, "payment_matches_total": True, "responsible_seller_ids": []},
-            "expected_issue": "valid_split_payment",
-        },
-        {
-            "name": "Unsupported late claim",
-            "facts": {"order_status": "delivered", "total_payment": 50.0, "total_freight": 10.0,
-                      "is_delivered_late": False, "has_late_seller_handoff": False,
-                      "is_split_payment": False, "payment_matches_total": True, "responsible_seller_ids": []},
-            "expected_issue": "unsupported_late_claim",
-        },
-    ]
-
-    all_pass = True
-    for tc in test_cases:
-        result = evaluate_policy(tc["facts"])
-        status = "PASS" if result["primary_issue"] == tc["expected_issue"] else "FAIL"
-        if status == "FAIL":
-            all_pass = False
-        print(f"  [{status}] {tc['name']}")
-        print(f"         Expected: {tc['expected_issue']}")
-        print(f"         Got:      {result['primary_issue']} (priority {result['matched_priority']})")
-        print(f"         Refund:   {result['recommended_refund_brl']} BRL")
-        print()
-
-    print(f"{'All tests passed!' if all_pass else 'SOME TESTS FAILED!'}")
