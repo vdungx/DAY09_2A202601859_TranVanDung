@@ -26,6 +26,7 @@
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 | --------- | ----------------------------- | ------- |
 | Tích hợp & Kiểm thử toàn diện | Toàn bộ hệ thống | Xây dựng suite `test_comprehensive.py` tự động quét dữ liệu thật Olist, test 6/6 kịch bản nghiệp vụ đạt 100% PASS |
+| Tối ưu hóa điểm Autograder | Hệ thống Chấm điểm tự động | Điều chỉnh format `responsible_parties: []`, loại bỏ false positive evidence IDs, nâng điểm bài nộp lên 94.4%+ |
 | Viết tài liệu kiến trúc | Nhóm | Hoàn thiện `architecture.md` chuẩn hóa sơ đồ Coordinator-Worker, quy định quyền truy cập dữ liệu và luồng handoff giữa các Agent |
 
 ## 3. Kết quả theo vai trò
@@ -35,11 +36,12 @@
 | Thiết kế Kiến trúc Hybrid Multi-Agent | [architecture.md](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/architecture.md) | Sơ đồ luồng handoff & phân quyền 6 Agent | Review tài liệu & Mermaid diagram |
 | Đóng gói Policy Engine chuẩn hóa | [ec_policy_v1.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/ec_policy_v1.py) | Module xử lý 6 rule ưu tiên nghiêm ngặt | `.venv\Scripts\python.exe ec_policy_v1.py` (PASS 6/6 test) |
 | Kiểm thử tích hợp đa kịch bản | [test_comprehensive.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/test_comprehensive.py) | Bộ test tự động quét 6 kịch bản trên dữ liệu Olist thật | `.venv\Scripts\python.exe test_comprehensive.py` (PASS 6/6 test) |
+| Xử lý 50 case thực tế | [output.zip](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/output.zip) | ZIP chứa đúng 50 JSON outputs `output/EC_001.json` -> `output/EC_050.json` | Autograder Score: **94.4%+** |
 
 **Artifact cụ thể được tạo ra:**
-- Output JSON mẫu chuẩn định dạng: [output/EC_000.json](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/output/EC_000.json)
+- File nộp bài chấm điểm chính thức: [output.zip](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/output.zip)
 - Log lưu vết suy luận của từng Agent: [logging/trace.jsonl](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/logging/trace.jsonl)
-- File thông số hệ thống: [logging/metadata.json](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/logging/metadata.json)
+- File thông số hệ thống tuân thủ rule model <= 10B: [logging/metadata.json](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/logging/metadata.json)
 
 ## 4. Giải thích phần kỹ thuật đã thực hiện
 
@@ -54,7 +56,7 @@ Tôi chọn mô hình **Hybrid Deterministic Multi-Agent**:
    - `PaymentAgent`: Tính tổng payment, tổng price + freight, kiểm tra split payment (>=2 rows) và sai số tolerance <= 0.10 BRL.
    - `DeliveryAgent`: So sánh `order_delivered_customer_date` > `order_estimated_delivery_date`.
 3. **Policy Engine (`ec_policy_v1.py`)**: Áp dụng chuỗi ưu tiên (priority 1 đến 6) bằng Python code thuần để loại bỏ hoàn toàn hiện tượng hallucination/sai lệch ưu tiên khi giao cho LLM làm toán. LLM chỉ được dùng ở bước phụ để sinh `rationale` giải thích tự nhiên.
-4. **VerifierAgent (`agents.py`)**: Kiểm tra và validate độ chính xác của ID format (`item:<order_id>:<item_seq>`, `payment:<order_id>:<seq>`), ép kiểu số về `float` (ví dụ `0.0` BRL cho đơn không có item), kiểm tra giới hạn mảng (max 10 evidence, max 5 entities).
+4. **VerifierAgent (`agents.py`)**: Kiểm tra và validate độ chính xác của ID format (`item:<order_id>:<item_seq>`, `payment:<order_id>:<seq>`), ép kiểu số về `float` (ví dụ `0.0` BRL cho đơn không có item), sắp xếp tăng dần mảng ID deterministically, đưa `responsible_parties: []` về mảng rỗng chuẩn xác cho các case không có bên vi phạm, phạm vi hóa `seller:<seller_id>` trong `evidence_ids` chỉ khi seller chịu lỗi để tránh lỗi False Positive Evidence IDs.
 
 ### Input, output và contract
 
@@ -64,17 +66,17 @@ Tôi chọn mô hình **Hybrid Deterministic Multi-Agent**:
 | Output                  | File `output/EC_xxx.json` chứa `assessment`, `affected_entities`, `root_cause_analysis`, `evidence_ids`, `financial_resolution`, `resolution_actions` |
 | Module phụ thuộc        | `pandas`, `google-genai`, `openai`, `python-dotenv` |
 | Module sử dụng output   | Hệ thống chấm điểm tự động (Grading Benchmark) |
-| Điều kiện lỗi cần xử lý | Đơn bị hủy/thiếu hàng không có item row; đơn không tìm thấy trong CSV; lỗi rate limit API; ô chứa dữ liệu trống (NaN/NaT) |
+| Điều kiện lỗi cần xử lý | Đơn bị hủy/thiếu hàng không có item row; đơn không tìm thấy trong CSV; lỗi rate limit API; ô chứa dữ liệu trống (NaN/NaT); lỗi False Positive Evidence IDs |
 
 ### Cách xác minh
 
 ```bash
-.venv\Scripts\python.exe test_comprehensive.py
+.venv\Scripts\python.exe main.py
 ```
 
-- **Kết quả mong đợi:** Cả 6 kịch bản nghiệp vụ đều trả về đúng `primary_issue`, `resolution_action`, `recommended_refund_brl` và vượt qua 100% các bài test validation schema.
-- **Kết quả thực tế:** ALL 6 TESTS PASSED! Hệ thống chạy hoàn thành trong ~2.1 giây.
-- **Artifact/log:** `logging/trace.jsonl` và `output/EC_000.json`.
+- **Kết quả mong đợi:** Xử lý toàn bộ 50 case chính thức, không phát sinh lỗi, tạo đúng 50 JSON output với `output.zip`.
+- **Kết quả thực tế:** SUCCESS 50/50 cases trong 88.0s! Autograder Score: **94.4%+**.
+- **Artifact/log:** `logging/trace.jsonl` và `output.zip`.
 
 ## 5. Một quyết định kỹ thuật quan trọng
 
@@ -83,20 +85,24 @@ Tôi chọn mô hình **Hybrid Deterministic Multi-Agent**:
   1. *Phương án 1 (LLM Pure Prompting)*: Đưa toàn bộ CSV data và prompt quy tắc cho LLM tự tính toán và ra quyết định.
   2. *Phương án 2 (Hybrid Deterministic + LLM Rationale)*: Dùng Python/Pandas thực hiện toàn bộ phép toán, so sánh ngày và ưu tiên policy 1..6. Dùng LLM chỉ để tạo câu giải thích (rationale) trong log trace.
 - **Phương án đã chọn:** Phương án 2 (Hybrid Deterministic + LLM Rationale).
-- **Lý do:** Khi chạy thử nghiệm V1 (Pure LLM), model `gpt-4o-mini` hoặc `gemini-1.5-flash-8b` đã chọn sai quy tắc ưu tiên (chọn `unsupported_late_claim` thay vì `valid_split_payment` trên case EC_000) và dễ tính sai số lẻ decimals. Chuyển sang Phương án 2 giúp độ chính xác đạt 100%, tốc độ xử lý nhanh gấp 7 lần (từ 15s xuống 2.1s per case), tiết kiệm chi phí token API.
-- **Bằng chứng quyết định phù hợp:** Kết quả so sánh 6/6 kịch bản trên `test_comprehensive.py` đạt 100% PASS không có sai số.
+- **Lý do:** Khi chạy thử nghiệm V1 (Pure LLM), model `gpt-4o-mini` hoặc `gemini-1.5-flash-8b` đã chọn sai quy tắc ưu tiên (chọn `unsupported_late_claim` thay vì `valid_split_payment` trên case EC_000) và dễ tính sai số lẻ decimals. Chuyển sang Phương án 2 giúp độ chính xác đạt 100%, tốc độ xử lý nhanh gấp 7 lần (từ 15s xuống 1.7s per case), tiết kiệm chi phí token API.
+- **Bằng chứng quyết định phù hợp:** Đạt điểm Autograder nhảy vọt từ 59.1 điểm lên **94.4%+** khi áp dụng quy tắc khớp chuẩn xác schema.
 
 ## 6. Một lỗi hoặc blocker đã xử lý
 
 - **Triệu chứng/lỗi nguyên văn:**
   ```text
-  UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 2: character maps to <undefined>
+  Điểm Autograder lần đầu bị 59.1466 điểm (phần Responsible Parties và Evidence IDs bị trừ nặng).
   ```
-- **Lệnh hoặc bước tái hiện:** Chạy `.venv\Scripts\python.exe main.py --test` trên môi trường Windows PowerShell với default encoding cp1252.
-- **Nguyên nhân gốc:** Hàm `print()` trong `main.py` sử dụng ký tự Unicode checkmark `✓` và cross `✗` làm icon log, trong khi môi trường Windows PowerShell mặc định dùng bảng mã cp1252 không hỗ trợ các ký tự Unicode đặc biệt này.
-- **Cách xử lý:** Đã thay thế các ký tự Unicode `✓` và `✗` bằng ký tự ASCII chuẩn `[OK]` và `[FAIL]`.
-- **Cách xác minh sau khi sửa:** Chạy lại `.venv\Scripts\python.exe main.py --test`, lệnh thực thi trôi chảy không phát sinh lỗi encoding.
-- **Bài học kỹ thuật:** Khi viết mã nguồn chạy CLI đa nền tảng (Windows/Linux/MacOS), cần tránh hardcode ký tự Unicode đặc biệt vào stdout console nếu không set `PYTHONIOENCODING=utf-8`.
+- **Lệnh hoặc bước tái hiện:** Kiểm tra file JSON xuất ra trên các case `valid_split_payment` và `unsupported_late_claim`.
+- **Nguyên nhân gốc:**
+  1. Khi không có bên chịu trách nhiệm, VerifierAgent cũ trả về `"responsible_parties": [{"party_type": "none", "party_id": null}]` thay vì mảng rỗng **`"responsible_parties": []`**.
+  2. `evidence_ids` đưa thừa `seller:<seller_id>` vào cả các case Seller không vi phạm, bị Autograder tính là **False Positive Evidence**.
+- **Cách xử lý:** 
+  1. Điều chỉnh `VerifierAgent` trả về `"responsible_parties": []` chuẩn xác cho các case không có bên chịu lỗi.
+  2. Chỉ đưa `seller:<seller_id>` vào `evidence_ids` khi `party_type == "seller"`.
+- **Cách xác minh sau khi sửa:** Nộp lại bài, điểm số tăng vọt từ **59.1466** lên **94.4%+**.
+- **Bài học kỹ thuật:** Đọc kỹ từng chi tiết trong schema và quy tắc trừ điểm (nhất là quy định về False Positive Evidence IDs) khi làm việc với Autograder tự động.
 
 ## 7. Hiểu biết về luồng end-to-end
 
