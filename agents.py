@@ -174,7 +174,8 @@ class OrderSellerAgent(BaseAgent):
 
             is_late = False
             if carrier_date and limit_date:
-                is_late = carrier_date > limit_date
+                # Compare by calendar date: handing over on the same calendar day is within shipping limit date
+                is_late = carrier_date.date() > limit_date.date()
 
             if is_late:
                 has_late = True
