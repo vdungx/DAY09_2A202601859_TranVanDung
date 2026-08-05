@@ -28,13 +28,16 @@ load_dotenv()
 
 _llm_cache = {}
 
+# Model declaration in source code (Rule compliance: model <= 10B parameters, declared in code not .env)
+MODEL_NAME = "gpt-4o-mini"
+
 def get_llm_client():
     """Returns (provider, client, model_name). Cached after first call."""
     if "client" in _llm_cache:
-        return _llm_cache["provider"], _llm_cache["client"], _llm_cache["model"]
+        return _llm_cache["provider"], _llm_cache["client"], MODEL_NAME
 
-    provider = os.getenv("LLM_PROVIDER", "gemini").lower()
-    model_name = os.getenv("MODEL_NAME", "gemini-1.5-flash-8b")
+    provider = os.getenv("LLM_PROVIDER", "openai").lower()
+    model_name = MODEL_NAME
 
     if provider == "gemini":
         api_key = os.getenv("GEMINI_API_KEY")

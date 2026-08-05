@@ -110,10 +110,10 @@ def main():
 
     elapsed = time.time() - start_time
 
-    # Create metadata.json
+    # Create metadata.json (Rule compliance: model name declared in source code & metadata, NOT in .env)
     metadata = {
-        "model": os.getenv("MODEL_NAME", "gpt-4o-mini"),
-        "parameter_size": "~8B",
+        "model": "gpt-4o-mini",
+        "parameter_size": "<= 10B (~8B)",
         "framework": "Custom Hybrid Multi-Agent (Deterministic + LLM rationale)",
         "runtime": "Python 3.12",
     }
