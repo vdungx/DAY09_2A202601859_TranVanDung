@@ -174,8 +174,7 @@ class OrderSellerAgent(BaseAgent):
 
             is_late = False
             if carrier_date and limit_date:
-                # Compare by calendar date: handing over on the same calendar day is within shipping limit date
-                is_late = carrier_date.date() > limit_date.date()
+                is_late = carrier_date > limit_date
 
             if is_late:
                 has_late = True
@@ -427,8 +426,10 @@ class VerifierAgent(BaseAgent):
             evidence.append(f"item:{iid}")
         for pid in payment_ids:
             evidence.append(f"payment:{pid}")
-        for sid in seller_ids:
-            evidence.append(f"seller:{sid}")
+        # Include seller in evidence_ids ONLY if seller is in responsible_parties (prevents false positive evidence IDs)
+        if party_type == "seller":
+            for sid in seller_ids:
+                evidence.append(f"seller:{sid}")
         evidence.append(f"policy:{root_cause_code}")
         evidence = evidence[:10]  # max 10
 

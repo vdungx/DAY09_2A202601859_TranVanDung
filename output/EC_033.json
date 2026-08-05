@@ -1,7 +1,7 @@
 {
   "case_id": "EC_033",
   "assessment": {
-    "primary_issue": "late_delivery_logistics",
+    "primary_issue": "late_delivery_seller",
     "case_status": "action_required",
     "confidence": 1.0
   },
@@ -22,14 +22,14 @@
   "root_cause_analysis": {
     "ranked_causes": [
       {
-        "cause_code": "CARRIER_DELIVERED_AFTER_ESTIMATE",
+        "cause_code": "SELLER_HANDOFF_AFTER_LIMIT",
         "rank": 1
       }
     ],
     "responsible_parties": [
       {
-        "party_type": "logistics_provider",
-        "party_id": "LOGISTICS_PROVIDER"
+        "party_type": "seller",
+        "party_id": "1025f0e2d44d7041d6cf58b6550e0bfa"
       }
     ]
   },
@@ -38,7 +38,7 @@
     "item:a5c8f3a11dcb9bd9b0acdfb8101dfdc8:1",
     "payment:a5c8f3a11dcb9bd9b0acdfb8101dfdc8:1",
     "seller:1025f0e2d44d7041d6cf58b6550e0bfa",
-    "policy:CARRIER_DELIVERED_AFTER_ESTIMATE"
+    "policy:SELLER_HANDOFF_AFTER_LIMIT"
   ],
   "financial_resolution": {
     "currency": "BRL",
