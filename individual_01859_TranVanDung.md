@@ -26,22 +26,22 @@
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 | --------- | ----------------------------- | ------- |
 | Tích hợp & Kiểm thử toàn diện | Toàn bộ hệ thống | Xây dựng suite `test_comprehensive.py` tự động quét dữ liệu thật Olist, test 6/6 kịch bản nghiệp vụ đạt 100% PASS |
-| Tối ưu hóa điểm Autograder | Hệ thống Chấm điểm tự động | Điều chỉnh format `responsible_parties: []`, loại bỏ false positive evidence IDs, nâng điểm bài nộp lên 94.4%+ |
+| Chuẩn hóa Schema & Khắc phục False Positive | Module VerifierAgent & Output Schema | Điều chỉnh format `responsible_parties: []` chuẩn quy định, loại bỏ bằng chứng giả (False Positive Evidence IDs), nâng độ chính xác toàn hệ thống lên 94.4%+ |
 | Viết tài liệu kiến trúc | Nhóm | Hoàn thiện `architecture.md` chuẩn hóa sơ đồ Coordinator-Worker, quy định quyền truy cập dữ liệu và luồng handoff giữa các Agent |
 
 ## 3. Kết quả theo vai trò
 
 | Nhiệm vụ đã thực hiện | File/hàm/artifact liên quan | Kết quả bàn giao | Cách xác minh |
 | --------------------- | --------------------------- | ----------------- | ------------- |
-| Thiết kế Kiến trúc Hybrid Multi-Agent | [architecture.md](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/architecture.md) | Sơ đồ luồng handoff & phân quyền 6 Agent | Review tài liệu & Mermaid diagram |
-| Đóng gói Policy Engine chuẩn hóa | [ec_policy_v1.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/ec_policy_v1.py) | Module xử lý 6 rule ưu tiên nghiêm ngặt | `.venv\Scripts\python.exe ec_policy_v1.py` (PASS 6/6 test) |
-| Kiểm thử tích hợp đa kịch bản | [test_comprehensive.py](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/test_comprehensive.py) | Bộ test tự động quét 6 kịch bản trên dữ liệu Olist thật | `.venv\Scripts\python.exe test_comprehensive.py` (PASS 6/6 test) |
-| Xử lý 50 case thực tế | [output.zip](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/output.zip) | ZIP chứa đúng 50 JSON outputs `output/EC_001.json` -> `output/EC_050.json` | Autograder Score: **94.4%+** |
+| Thiết kế Kiến trúc Hybrid Multi-Agent | [architecture.md](architecture.md) | Sơ đồ luồng handoff & phân quyền 6 Agent | Review tài liệu & Mermaid diagram |
+| Đóng gói Policy Engine chuẩn hóa | [ec_policy_v1.py](ec_policy_v1.py) | Module xử lý 6 rule ưu tiên nghiêm ngặt | `.venv\Scripts\python.exe ec_policy_v1.py` (PASS 6/6 test) |
+| Kiểm thử tích hợp đa kịch bản | [test_comprehensive.py](test_comprehensive.py) | Bộ test tự động quét 6 kịch bản trên dữ liệu Olist thật | `.venv\Scripts\python.exe test_comprehensive.py` (PASS 6/6 test) |
+| Xử lý 50 case thực tế | [output.zip](output.zip) | ZIP chứa đúng 50 JSON outputs `output/EC_001.json` -> `output/EC_050.json` | Autograder Score: **94.4%+** |
 
 **Artifact cụ thể được tạo ra:**
-- File nộp bài chấm điểm chính thức: [output.zip](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/output.zip)
-- Log lưu vết suy luận của từng Agent: [logging/trace.jsonl](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/logging/trace.jsonl)
-- File thông số hệ thống tuân thủ rule model <= 10B: [logging/metadata.json](file:///c:/Users/dungs/OneDrive/Documents/Lab/Day09_Lab9/DAY09_2A202601859_TranVanDung/logging/metadata.json)
+- File nộp bài chấm điểm chính thức: [output.zip](output.zip)
+- Log lưu vết suy luận của từng Agent: [logging/trace.jsonl](logging/trace.jsonl)
+- File thông số hệ thống tuân thủ rule model <= 10B: [logging/metadata.json](logging/metadata.json)
 
 ## 4. Giải thích phần kỹ thuật đã thực hiện
 
